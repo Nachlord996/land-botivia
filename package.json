@@ -1,0 +1,16 @@
+{
+  "name": "land-botivia",
+  "version": "1.0.0",
+  "description": "developing a discord bot using Node.js for managing e-sports team",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "nodemon ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.3.1",
+    "node": "^14.8.0",
+    "nodemon": "^2.0.4"
+  }
+}
