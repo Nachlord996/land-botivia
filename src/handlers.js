@@ -29,7 +29,7 @@ exports.help = (message) => {
         {
             title: "🦙 ¿ Alguien ordenó un Botiviano ? 🦙",
             color: data.EMBEDCOLOR,
-            description: "¡ Botiviano al rescate ! Siempre estoy a disposición\n\nDejo algunos llamados en mi idioma nativo:\n🔻 `!help` - Pide una mano\n🔻 `!m` - Recibe un saludo personal\n🔻 `!squad` - Muestra los admins\n\nUn saludo, que Dios te ayude.\nMientras tanto, me retiro a la montaña 💫"
+            description: "¡ Botiviano al rescate ! Siempre estoy a disposición\n\nDejo algunos llamados en mi idioma nativo:\n🔻 `!help` - Pide una mano\n🔻 `!m` - Recibe un saludo personal\n🔻 `!squad` - Muestra los admins\n🔻 `!admin` - Solicita ayuda al administrador\n\nUn saludo, que Dios te ayude.\nMientras tanto, me retiro a la montaña 💫"
         }
     )
 
