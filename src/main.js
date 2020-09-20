@@ -27,6 +27,8 @@ function initializeServer() {
     )
   })
 
+  data.initializeData()
+  
   client.on('voiceStateUpdate', (old_state, new_state) => { 
     manageVoiceUpdate(client, old_state, new_state)
   })

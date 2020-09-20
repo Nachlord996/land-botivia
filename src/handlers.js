@@ -1,5 +1,6 @@
 const Discord = require('discord.js')
 const data = require('./data_and_constants')
+const among_us = require('./among_us')
 
 exports.unknown = (message) => {
     let response = new Discord.MessageEmbed(
@@ -40,7 +41,7 @@ exports.adminCall = (client, message) => {
     var response
     var member_id = message.member.id
     var next_help_time = data.requestHelp(member_id, Date.now())
-    if (next_help_time == undefined){
+    if (next_help_time == undefined) {
         response = new Discord.MessageEmbed(
             {
                 title: "👑 Larga vida al rey 👑",
@@ -52,19 +53,19 @@ exports.adminCall = (client, message) => {
             {
                 title: "🐐 Escuadrón de cabras informantes 🗻",
                 color: data.EMBEDCOLOR,
-                description: "**Admin**! " + message.author.username + " está en problemas.\nSolicita su ayuda en " + message.guild.name +" #" + message.channel.name
+                description: "**Admin**! " + message.author.username + " está en problemas.\nSolicita su ayuda en " + message.guild.name + " #" + message.channel.name
             }
         )
 
         client.guilds.cache.get(data.SQUAD_SERVER_ID).members.cache.get(data.ADMIN_ID).send(telegram)
     } else {
         var timeleft_seg = Math.floor(next_help_time / 1000)
-                if (timeleft_seg > 60){
-                    timeleft_min = (timeleft_seg / 60) >> 0
-                    timeleft_seg = timeleft_seg % 60
-                } else { 
-                    timeleft_min = 0
-                }
+        if (timeleft_seg > 60) {
+            timeleft_min = (timeleft_seg / 60) >> 0
+            timeleft_seg = timeleft_seg % 60
+        } else {
+            timeleft_min = 0
+        }
         var line = timeleft_min + 'm ' + timeleft_seg + 's'
         response = new Discord.MessageEmbed(
             {
@@ -98,27 +99,27 @@ exports.squad = (client, message) => {
                     title: 'Mucho más que una manada',
                     description: `Nuestro Alpha Supremo:\n👑 **SimonLP**\n\nLobos Alpha:\n${alpha_wolfs}`
                 })
-           message.channel.send(response)
+            message.channel.send(response)
         })
     }
 }
 
 exports.playAmongUs = (client, message) => {
-    var response 
+    var response
     var requester_id = message.member.id
-    if (data.takeAmongUsRoom(requester_id)){
+    if (among_us.takeRoom(requester_id)) {
         var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
         server.members.fetch().then(
             (members) => {
                 var role = server.roles.cache.get(data.CAPTAIN_ROLE_ID)
                 var member = members.get(requester_id)
-                if (member != undefined && role != undefined){
-                   member.roles.add(role)
-                   member.user.send(new Discord.MessageEmbed({
-                       title: '🦅 ¡ Eres el capitán ! 🦅',
-                       color: data.EMBEDCOLOR,
-                       description: 'Ahora dispones del canal #amongus para enviar comandos!\nAplica las leyes de Botivia:\n🔻`!mute` - Silencia a todos en la sala\n🔻`!meet` - Habilita el audio en las reuniones\n\nDisfuta de tu partida! 💫'
-                   }))
+                if (member != undefined && role != undefined) {
+                    member.roles.add(role)
+                    member.user.send(new Discord.MessageEmbed({
+                        title: '🦅 ¡ Eres el capitán ! 🦅',
+                        color: data.EMBEDCOLOR,
+                        description: 'Ahora dispones del canal #amongus para enviar comandos!\nAplica las leyes de Botivia:\n🔻`!mute` - Silencia a todos en la sala\n🔻`!meet` - Habilita el audio en las reuniones\n\nDisfuta de tu partida! 💫'
+                    }))
                 }
             }
         )
@@ -131,62 +132,66 @@ exports.playAmongUs = (client, message) => {
         var response = new Discord.MessageEmbed({
             title: '🔑 ¡ Tal vez la próxima ! 🔑',
             color: data.EMBEDCOLOR,
-            description: 'La sala se encuentra reservada, inténtalo más tarde.'
+            description: 'No hay salas disponibles, inténtalo más tarde.'
         })
-    
-    }    
+    }
     message.channel.send(response)
 }
 
+
 exports.muteAll = (client, message) => {
     var voice_channel = message.member.voice.channel
-    if (message.channel.id === data.AMONG_US_TEXT_CHANNEL && voice_channel.id === data.AMONG_US_VOICE_CHANNEL){
-        var response = new Discord.MessageEmbed({
+    var text_channel = message.channel
+    if (speakCommands(voice_channel, text_channel, false)) {
+        message.channel.send(new Discord.MessageEmbed({
             color: data.EMBEDCOLOR,
             description: 'Se ha silenciado el canal #among-us'
-        })
-
-        voice_channel.members.forEach((player) => {player.voice.setMute(true)})
-        data.Among_Us_Channel.state = false
-        
-        message.channel.send(response)
+        }))
     }
+}
+
+function speakCommands(voice_channel, text_channel, next_state) {
+    var result = false
+    if (voice_channel != undefined) {
+        if (among_us.changeVoiceState(voice_channel.id, text_channel.id, next_state)) {
+            voice_channel.members.forEach((player) => { player.voice.setMute(!next_state) })
+            result = true
+        }
+    }
+    return result
 }
 
 exports.meet = (client, message) => {
     var voice_channel = message.member.voice.channel
-    if (message.channel.id === data.AMONG_US_TEXT_CHANNEL && voice_channel.id === data.AMONG_US_VOICE_CHANNEL){
-        var response = new Discord.MessageEmbed({
+    var text_channel = message.channel
+    if (speakCommands(voice_channel, text_channel, true)) {
+        message.channel.send(new Discord.MessageEmbed({
             color: data.EMBEDCOLOR,
             description: 'LLegó el momento de hablar!'
-        })
-
-        voice_channel.members.forEach((player) => {player.voice.setMute(false)})
-        data.Among_Us_Channel.state = true
-        
-        message.channel.send(response)
+        }))
     }
 }
 
-exports.amongUsConnect = (client, member) => {
-    data.Among_Us_Channel.connect()
-    if (!data.Among_Us_Channel.state){
-        member.voice.setMute(true)
+// Call always with an existing room
+exports.amongUsConnect = (client, member, channel) => {
+    among_us.connect(channel)
+    var room_state = among_us.getRoomState(channel)
+    if (room_state != undefined){
+        if (!room_state) {
+            member.voice.setMute(true)
+        }
     }
 }
 
-exports.amongUsDisconnect = (client, member) => {
-    member.voice.setMute(false)
-    var channel = data.Among_Us_Channel
-    if (channel.disconnect()){
-        var captain_ID = channel.borrower.id
+exports.amongUsDisconnect = (client, member, channel) => {
+    var close_action = (room) => { 
+        var captain_ID = room.borrower
         var captain = client.guilds.cache.get(data.SQUAD_SERVER_ID).members.cache.get(captain_ID)
         if (captain != undefined){
-        captain.fetch().then(
-            (member) => {            
-                    captain.roles.remove(data.CAPTAIN_ROLE_ID)
-                }
-            
-        )}
+            captain.fetch().then(() => { captain.roles.remove(room.captainRoleID) } )
+        }
     }
+
+    among_us.disconnect(channel, close_action)
+  
 }

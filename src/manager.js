@@ -12,12 +12,12 @@ exports.manageVoiceUpdate = (client, old_state, new_state) => {
     switch(old_state.channelID){
         case data.AMONG_US_VOICE_CHANNEL:
             if (new_state.channelID != data.AMONG_US_VOICE_CHANNEL){
-                Handlers.amongUsDisconnect(client, old_state.member)
+                Handlers.amongUsDisconnect(client, old_state.member, old_state.channelID)
             } 
             break;
         default:
             if (new_state.channelID === data.AMONG_US_VOICE_CHANNEL){
-                Handlers.amongUsConnect(client, new_state.member)
+                Handlers.amongUsConnect(client, new_state.member, new_state.channelID)
             } else {
                 if (new_state.channelID != undefined){
                     new_state.member.voice.setMute(false)
