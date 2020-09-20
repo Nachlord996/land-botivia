@@ -102,3 +102,91 @@ exports.squad = (client, message) => {
         })
     }
 }
+
+exports.playAmongUs = (client, message) => {
+    var response 
+    var requester_id = message.member.id
+    if (data.takeAmongUsRoom(requester_id)){
+        var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
+        server.members.fetch().then(
+            (members) => {
+                var role = server.roles.cache.get(data.CAPTAIN_ROLE_ID)
+                var member = members.get(requester_id)
+                if (member != undefined && role != undefined){
+                   member.roles.add(role)
+                   member.user.send(new Discord.MessageEmbed({
+                       title: '🦅 ¡ Eres el capitán ! 🦅',
+                       color: data.EMBEDCOLOR,
+                       description: 'Ahora dispones del canal #amongus para enviar comandos!\nAplica las leyes de Botivia:\n🔻`!mute` - Silencia a todos en la sala\n🔻`!meet` - Habilita el audio en las reuniones\n\nDisfuta de tu partida! 💫'
+                   }))
+                }
+            }
+        )
+        response = new Discord.MessageEmbed({
+            title: '🕵 ¡ Descubre al asesino ! 🕵',
+            color: data.EMBEDCOLOR,
+            description: '<@' + message.author.id + '>, eres el nuevo capitán de la nave 🚀\nTengo que informar a la base del impostor, Buen viaje!'
+        })
+    } else {
+        var response = new Discord.MessageEmbed({
+            title: '🔑 ¡ Tal vez la próxima ! 🔑',
+            color: data.EMBEDCOLOR,
+            description: 'La sala se encuentra reservada, inténtalo más tarde.'
+        })
+    
+    }    
+    message.channel.send(response)
+}
+
+exports.muteAll = (client, message) => {
+    var voice_channel = message.member.voice.channel
+    if (message.channel.id === data.AMONG_US_TEXT_CHANNEL && voice_channel.id === data.AMONG_US_VOICE_CHANNEL){
+        var response = new Discord.MessageEmbed({
+            color: data.EMBEDCOLOR,
+            description: 'Se ha silenciado el canal #among-us'
+        })
+
+        voice_channel.members.forEach((player) => {player.voice.setMute(true)})
+        data.Among_Us_Channel.state = false
+        
+        message.channel.send(response)
+    }
+}
+
+exports.meet = (client, message) => {
+    var voice_channel = message.member.voice.channel
+    if (message.channel.id === data.AMONG_US_TEXT_CHANNEL && voice_channel.id === data.AMONG_US_VOICE_CHANNEL){
+        var response = new Discord.MessageEmbed({
+            color: data.EMBEDCOLOR,
+            description: 'LLegó el momento de hablar!'
+        })
+
+        voice_channel.members.forEach((player) => {player.voice.setMute(false)})
+        data.Among_Us_Channel.state = true
+        
+        message.channel.send(response)
+    }
+}
+
+exports.amongUsConnect = (client, member) => {
+    data.Among_Us_Channel.connect()
+    if (!data.Among_Us_Channel.state){
+        member.voice.setMute(true)
+    }
+}
+
+exports.amongUsDisconnect = (client, member) => {
+    member.voice.setMute(false)
+    var channel = data.Among_Us_Channel
+    if (channel.disconnect()){
+        var captain_ID = channel.borrower.id
+        var captain = client.guilds.cache.get(data.SQUAD_SERVER_ID).members.cache.get(captain_ID)
+        if (captain != undefined){
+        captain.fetch().then(
+            (member) => {            
+                    captain.roles.remove(data.CAPTAIN_ROLE_ID)
+                }
+            
+        )}
+    }
+}
