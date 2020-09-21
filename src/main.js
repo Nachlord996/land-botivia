@@ -20,6 +20,7 @@ function initializeServer() {
 
   client.fetchApplication().then(() => {
     var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
+    
     server.members.fetch().then(
       (members) => {
         members.forEach((member, id) => data.addWolf(member.displayName, member.user.username, id, member.user.dmChannel))
@@ -28,7 +29,7 @@ function initializeServer() {
   })
 
   data.initializeData()
-  
+
   client.on('voiceStateUpdate', (old_state, new_state) => { 
     manageVoiceUpdate(client, old_state, new_state)
   })

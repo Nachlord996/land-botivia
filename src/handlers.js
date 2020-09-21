@@ -107,11 +107,13 @@ exports.squad = (client, message) => {
 exports.playAmongUs = (client, message) => {
     var response
     var requester_id = message.member.id
-    if (among_us.takeRoom(requester_id)) {
+    var room_ticket = among_us.takeRoom(requester_id)
+    if (room_ticket != undefined) {
         var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
         server.members.fetch().then(
             (members) => {
-                var role = server.roles.cache.get(data.CAPTAIN_ROLE_ID)
+                var role = server.roles.cache.get(room_ticket.captainRoleID)
+                updateRoomPermissions(server, room_ticket.channelID, true)
                 var member = members.get(requester_id)
                 if (member != undefined && role != undefined) {
                     member.roles.add(role)
@@ -136,6 +138,12 @@ exports.playAmongUs = (client, message) => {
         })
     }
     message.channel.send(response)
+}
+
+function updateRoomPermissions(server, voice_channel_id, action){
+    var everyone_role = server.roles.cache.find((role) => role.name === '@everyone')
+    var change_option = action ? {CONNECT: true} : {CONNECT: false} 
+    server.channels.cache.get(voice_channel_id).updateOverwrite(everyone_role, change_option).catch((err) => console.log(err))
 }
 
 
@@ -186,12 +194,15 @@ exports.amongUsConnect = (client, member, channel) => {
 exports.amongUsDisconnect = (client, member, channel) => {
     var close_action = (room) => { 
         var captain_ID = room.borrower
-        var captain = client.guilds.cache.get(data.SQUAD_SERVER_ID).members.cache.get(captain_ID)
+        var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
+        updateRoomPermissions(server, room.channelID, false) 
+        var captain = server.members.cache.get(captain_ID)
         if (captain != undefined){
-            captain.fetch().then(() => { captain.roles.remove(room.captainRoleID) } )
+            captain.fetch().then(() => { 
+                captain.roles.remove(room.captainRoleID) 
+                
+            } )      
         }
     }
-
     among_us.disconnect(channel, close_action)
-  
 }

@@ -1,7 +1,16 @@
-const AMONG_US_TEXT_CHANNEL = '756587067017789582'
-const AMONG_US_VOICE_CHANNEL = '756583999228346449' 
-const CAPTAIN_ROLE_ID = '756596214778298499' 
+/**
+ * A simple and clean Node JS Module to work with Among Us rooms.
+ * 
+ * Basically, a room is a unique 3-tuple which holds enough information for simulating Among Us desired behavior.
+ * Every room is made up from 1 private text channel, 1 public voice channel and a certain role for admin purposes.
+ * Making a reservation over a room, change its voice state (mute/talking) and managing connections are the main features
+ * implemented by this module.
+ *      
+ * Dev: Ignacio Martinez
+ * Last Update: 21/09/2020 
+ */
 
+ // Temporal Storage for instances of Game_Room 
 const ROOMS = []
 
 class Game_Room {
@@ -23,29 +32,64 @@ class Game_Room {
         return false
     }
 
-    connect(){
-        this.connectedUsers += 1
+    connect() {
+        if(!this.available){
+            this.connectedUsers += 1
+        }
     }
 
-    disconnect(){
+    disconnect() {
         var empty = false
-        this.connectedUsers--
-        if (this.connectedUsers == 0){
-            empty = true
+        if(!this.available){
+            this.connectedUsers--
+            if (this.connectedUsers == 0){
+                empty = true
+                this.available = true
+            }
         }
         return empty
     }
+
+    generateTicket(){
+        return new Room_ticket(this.channelID, this.cmdChannelID, this.captainRoleID)
+    }
 } 
 
+class Room_ticket {
+    constructor(voiceChannelID, textChannelID, captainRoleID){
+        this.channelID = voiceChannelID
+        this.cmdChannelID = textChannelID
+        this.captainRoleID = captainRoleID
+    }
+}
+
+/**
+ *  Add a new room to the storage
+ *  Params names are self-explanatory 
+ * */ 
 function addRoom(text_channel_id, voice_channel_id, captain_role_id){
     ROOMS.push(new Game_Room(voice_channel_id, text_channel_id, captain_role_id))
-    console.log(ROOMS)
 }
 
+/**
+ *  Assign an available room to a requester
+ *  Checks whether there is a empty room. If condition is met, generates a room ticket with basic information of the assigned room 
+ *  Otherwise returns undefined
+ */
 function takeRoom(borrower_id){
-    return ROOMS.find((room) => room.takeRoom(borrower_id)) != undefined
+    var ticket
+    var available_room = ROOMS.find((room) => room.takeRoom(borrower_id))
+    if (available_room != undefined){
+        ticket = available_room.generateTicket()
+    }
+    return ticket
 }
 
+/**
+ * Set voiceState value of a specific room.
+ * Searchs for desired room and assigns param value to room's property
+ * Return true when voiceState was changed, otherwise false
+ */
 function changeVoiceState(voice_channel, text_channel, nextState) {
     var result = false
     if (typeof(nextState) === 'boolean'){
@@ -58,20 +102,24 @@ function changeVoiceState(voice_channel, text_channel, nextState) {
     return result
 }
 
+/**
+ * Get voiceState value of a specific room.
+ * Returns its state if found.
+ */
+function getRoomState(voice_channel_id){
+    var result = undefined
+    var target_room = ROOMS.find((room) => room.channelID === voice_channel_id)
+    if (target_room != undefined){
+        result = target_room.state
+    }
+    return result
+}
+
 function connect(voice_channel){
     var target_room = ROOMS.find((room) => room.channelID === voice_channel)
     if (target_room != undefined){
         target_room.connect()
     }
-}
-
-function getRoomState(voice_channel_id){
-    var result = undefined
-    var target_room = ROOMS.find((room) => {room.channelID === voice_channel_id})
-    if (target_room != undefined){
-        result = target_room.state
-    }
-    return result
 }
 
 function disconnect(voice_channel, close_action){
@@ -86,6 +134,7 @@ function disconnect(voice_channel, close_action){
     return result
 }
 
+// Make the functions public
 exports.addRoom = addRoom
 exports.takeRoom = takeRoom
 exports.connect = connect
