@@ -1,5 +1,6 @@
 const { Wolf }= require('./wolf')
 const Among_Us = require('./among_us')
+const Handlers = require('./handlers')
 
 const AMONG_US_TEXT_CHANNEL = '756587067017789582'
 const AMONG_US_VOICE_CHANNEL = '756583999228346449' 
@@ -23,8 +24,9 @@ exports.requestHelp = (wolf_id, request_date) => {
     if (requester != undefined) return requester.requestHelp(request_date, ADMINCALLTIME)
 }
 
-exports.initializeData = () => {
+exports.initializeData = (server) => {
     Among_Us.addRoom(AMONG_US_TEXT_CHANNEL, AMONG_US_VOICE_CHANNEL, CAPTAIN_ROLE_ID)
+    Handlers.updateRoomPermissions(server, AMONG_US_VOICE_CHANNEL, false)
 }
 
 function lookWolf(wolf_id){

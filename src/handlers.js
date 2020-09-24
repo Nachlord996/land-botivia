@@ -30,7 +30,7 @@ exports.help = (message) => {
         {
             title: "🦙 ¿ Alguien ordenó un Botiviano ? 🦙",
             color: data.EMBEDCOLOR,
-            description: "¡ Botiviano al rescate ! Siempre estoy a disposición\n\nDejo algunos llamados en mi idioma nativo:\n🔻 `!help` - Pide una mano\n🔻 `!m` - Recibe un saludo personal\n🔻 `!squad` - Muestra los admins\n🔻 `!admin` - Solicita ayuda al administrador\n\nUn saludo, que Dios te ayude.\nMientras tanto, me retiro a la montaña 💫"
+            description: "¡ Botiviano al rescate ! Siempre estoy a disposición\n\nDejo algunos llamados en mi idioma nativo:\n🔻 `!help` - Pide una mano\n🔻 `!m` - Recibe un saludo personal\n🔻 `!squad` - Muestra los admins\n🔻 `!admin` - Solicita ayuda al administrador\n🔻 `!monjas` - Solicita una sala de Among Us\n\nUn saludo, que Dios te ayude.\nMientras tanto, me retiro a la montaña 💫"
         }
     )
 
@@ -140,21 +140,24 @@ exports.playAmongUs = (client, message) => {
     message.channel.send(response)
 }
 
-function updateRoomPermissions(server, voice_channel_id, action){
+function updateRoomPermissions(server, voice_channel_id, action) {
     var everyone_role = server.roles.cache.find((role) => role.name === '@everyone')
-    var change_option = action ? {CONNECT: true} : {CONNECT: false} 
+    var change_option = action ? { CONNECT: true } : { CONNECT: false }
     server.channels.cache.get(voice_channel_id).updateOverwrite(everyone_role, change_option).catch((err) => console.log(err))
 }
 
 
 exports.muteAll = (client, message) => {
-    var voice_channel = message.member.voice.channel
-    var text_channel = message.channel
-    if (speakCommands(voice_channel, text_channel, false)) {
-        message.channel.send(new Discord.MessageEmbed({
-            color: data.EMBEDCOLOR,
-            description: 'Se ha silenciado el canal #among-us'
-        }))
+    var voice = message.member.voice
+    if (voice != undefined) {
+        var voice_channel = message.member.voice.channel
+        var text_channel = message.channel
+        if (speakCommands(voice_channel, text_channel, false)) {
+            message.channel.send(new Discord.MessageEmbed({
+                color: data.EMBEDCOLOR,
+                description: 'Se ha silenciado el canal #among-us'
+            }))
+        }
     }
 }
 
@@ -170,13 +173,16 @@ function speakCommands(voice_channel, text_channel, next_state) {
 }
 
 exports.meet = (client, message) => {
-    var voice_channel = message.member.voice.channel
-    var text_channel = message.channel
-    if (speakCommands(voice_channel, text_channel, true)) {
-        message.channel.send(new Discord.MessageEmbed({
-            color: data.EMBEDCOLOR,
-            description: 'LLegó el momento de hablar!'
-        }))
+    var voice = message.member.voice
+    if (voice != undefined) {
+        var voice_channel = message.member.voice.channel
+        var text_channel = message.channel
+        if (speakCommands(voice_channel, text_channel, true)) {
+            message.channel.send(new Discord.MessageEmbed({
+                color: data.EMBEDCOLOR,
+                description: 'LLegó el momento de hablar!'
+            }))
+        }
     }
 }
 
@@ -184,7 +190,7 @@ exports.meet = (client, message) => {
 exports.amongUsConnect = (client, member, channel) => {
     among_us.connect(channel)
     var room_state = among_us.getRoomState(channel)
-    if (room_state != undefined){
+    if (room_state != undefined) {
         if (!room_state) {
             member.voice.setMute(true)
         }
@@ -192,17 +198,19 @@ exports.amongUsConnect = (client, member, channel) => {
 }
 
 exports.amongUsDisconnect = (client, member, channel) => {
-    var close_action = (room) => { 
+    var close_action = (room) => {
         var captain_ID = room.borrower
         var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
-        updateRoomPermissions(server, room.channelID, false) 
+        updateRoomPermissions(server, room.channelID, false)
         var captain = server.members.cache.get(captain_ID)
-        if (captain != undefined){
-            captain.fetch().then(() => { 
-                captain.roles.remove(room.captainRoleID) 
-                
-            } )      
+        if (captain != undefined) {
+            captain.fetch().then(() => {
+                captain.roles.remove(room.captainRoleID)
+
+            })
         }
     }
     among_us.disconnect(channel, close_action)
 }
+
+exports.updateRoomPermissions = updateRoomPermissions

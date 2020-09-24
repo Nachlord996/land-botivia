@@ -20,6 +20,7 @@ function initializeServer() {
 
   client.fetchApplication().then(() => {
     var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
+    data.initializeData(server)
     
     server.members.fetch().then(
       (members) => {
@@ -28,7 +29,7 @@ function initializeServer() {
     )
   })
 
-  data.initializeData()
+  
 
   client.on('voiceStateUpdate', (old_state, new_state) => { 
     manageVoiceUpdate(client, old_state, new_state)
