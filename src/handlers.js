@@ -110,21 +110,19 @@ exports.playAmongUs = (client, message) => {
     var room_ticket = among_us.takeRoom(requester_id)
     if (room_ticket != undefined) {
         var server = client.guilds.cache.get(data.SQUAD_SERVER_ID)
-        server.members.fetch().then(
-            (members) => {
-                var role = server.roles.cache.get(room_ticket.captainRoleID)
-                updateRoomPermissions(server, room_ticket.channelID, true)
-                var member = members.get(requester_id)
-                if (member != undefined && role != undefined) {
-                    member.roles.add(role)
-                    member.user.send(new Discord.MessageEmbed({
-                        title: '🦅 ¡ Eres el capitán ! 🦅',
-                        color: data.EMBEDCOLOR,
-                        description: 'Ahora dispones del canal #amongus para enviar comandos!\nAplica las leyes de Botivia:\n🔻`!mute` - Silencia a todos en la sala\n🔻`!meet` - Habilita el audio en las reuniones\n\nDisfuta de tu partida! 💫'
-                    }))
-                }
-            }
-        )
+        var members = server.members.cache
+        server.members.fetch().then((msg) => console.log('aceptado'),(reason) => console.log(reason))
+        var role = server.roles.cache.get(room_ticket.captainRoleID)
+        updateRoomPermissions(server, room_ticket.channelID, true)
+        var member = members.get(requester_id)
+        if (member != undefined && role != undefined) {
+            member.roles.add(role)
+            member.user.send(new Discord.MessageEmbed({
+                title: '🦅 ¡ Eres el capitán ! 🦅',
+                color: data.EMBEDCOLOR,
+                description: 'Ahora dispones del canal #amongus para enviar comandos!\nAplica las leyes de Botivia:\n🔻`!mute` - Silencia a todos en la sala\n🔻`!meet` - Habilita el audio en las reuniones\n\nDisfuta de tu partida! 💫'
+            }))
+        }
         response = new Discord.MessageEmbed({
             title: '🕵 ¡ Descubre al asesino ! 🕵',
             color: data.EMBEDCOLOR,
