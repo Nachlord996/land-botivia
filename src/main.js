@@ -5,14 +5,10 @@ const { manageMessage, manageVoiceUpdate } = require('./manager')
 const data = require('./data_and_constants') 
 
 // Load bot token from local file
-let secret
-try { secret = file.readFileSync('secret.json') } catch {
-  console.log('Create secret file before start')
-  process.exit()
-}
+
 secret_1 = 'NzQ3ODg4OTc2MjcwMDY1ODE2.X0Vb4w'
 var secret_2 = '7r1cqBe_eNibbolm7dvvPJHWb58'
-let token = JSON.parse(secret).token;
+
 const init_promise = client.login(secret_1 + '.' + secret_2);
 
 init_promise.then(initializeServer, (err) => console.log('Invalid key, exiting...\n' + err))
