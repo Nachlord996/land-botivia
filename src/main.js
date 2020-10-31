@@ -6,7 +6,7 @@ const data = require('./data_and_constants')
 
 // Load bot token from local file
 let secret
-try { secret = file.readFileSync('secret.json') } catch {
+try { secret = file.readFileSync('../secret.json') } catch {
   console.log('Create secret file before start')
   process.exit()
 }
